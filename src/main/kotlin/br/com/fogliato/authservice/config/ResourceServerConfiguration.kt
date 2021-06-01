@@ -7,7 +7,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer
 
-
 @Configuration
 @EnableResourceServer
 class ResourceServerConfiguration(
@@ -21,9 +20,13 @@ class ResourceServerConfiguration(
 
   @Throws(Exception::class)
   override fun configure(http: HttpSecurity) {
-    http.authorizeRequests()
-        .antMatchers("/**")
-        .permitAll()
+    http
+      .logout()
+      .invalidateHttpSession(true)
+      .clearAuthentication(true)
+      .and().authorizeRequests()
+      .anyRequest().fullyAuthenticated()
+//      .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 //        .authenticated()
 //        .antMatchers(HttpMethod.GET, "/**").access("#oauth2.hasScope('read')")
 //        .antMatchers(HttpMethod.OPTIONS, "/**").access("#oauth2.hasScope('read')")

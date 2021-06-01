@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore
 import javax.sql.DataSource
 
@@ -18,6 +20,8 @@ import javax.sql.DataSource
 class AuthorizationServerConfiguration(
     @Qualifier("authenticationManagerBean")
     val authenticationManager: AuthenticationManager,
+
+    val passwordEncoder: PasswordEncoder,
 
     val dataSource: DataSource,
 
@@ -46,9 +50,16 @@ class AuthorizationServerConfiguration(
         return JdbcTokenStore(dataSource)
     }
 
+    @Throws(java.lang.Exception::class)
+    override fun configure(security: AuthorizationServerSecurityConfigurer) {
+        security.passwordEncoder(passwordEncoder)
+    }
+
     @Throws(Exception::class)
     override fun configure(endpoints: AuthorizationServerEndpointsConfigurer) {
-        endpoints.authenticationManager(authenticationManager).tokenStore(tokenStore())
+        endpoints
+            .authenticationManager(authenticationManager)
+            .tokenStore(tokenStore())
     }
 
     @Throws(Exception::class)
