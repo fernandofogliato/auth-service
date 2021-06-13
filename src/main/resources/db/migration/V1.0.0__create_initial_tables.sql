@@ -21,18 +21,18 @@ CREATE TABLE IF NOT EXISTS user_authority (
 
 CREATE TABLE IF NOT EXISTS oauth_access_token (
   token_id VARCHAR(256) DEFAULT NULL,
-  token bytea,
+  token BYTEA,
   authentication_id VARCHAR(256) DEFAULT NULL,
-  user_name VARCHAR(256) DEFAULT NULL,
+  username VARCHAR(256) DEFAULT NULL,
   client_id VARCHAR(256) DEFAULT NULL,
-  authentication bytea,
+  authentication BYTEA,
   refresh_token VARCHAR(256) DEFAULT NULL
 );
 
 CREATE TABLE IF NOT EXISTS oauth_refresh_token (
   token_id VARCHAR(256) DEFAULT NULL,
-  token bytea,
-  authentication bytea
+  token BYTEA,
+  authentication BYTEA
 );
 
 CREATE TABLE IF NOT EXISTS  oauth_client_details (
@@ -46,5 +46,5 @@ CREATE TABLE IF NOT EXISTS  oauth_client_details (
   access_token_validity INTEGER,
   refresh_token_validity INTEGER,
   additional_information VARCHAR(4096),
-  auto_approve VARCHAR(255)
+  autoapprove VARCHAR(255)
 );

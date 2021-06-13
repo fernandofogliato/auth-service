@@ -5,9 +5,10 @@ import javax.validation.constraints.Email
 import javax.validation.constraints.Size
 
 @Entity
+@Table(name="`user`")
 class User(
     @Id
-    @Column(updatable = false, nullable = false)
+    @Column(name = "username", updatable = false, nullable = false)
     val username: String,
 
     @Size(min = 0, max = 500)
@@ -25,10 +26,10 @@ class User(
     @Size(min = 0, max = 100)
     val resetPasswordKey: String,
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-      name = "user_authority",
-      joinColumns = [JoinColumn(name = "username")],
-      inverseJoinColumns = [JoinColumn(name = "authority")])
+        name = "user_authority",
+        joinColumns = [JoinColumn(name = "username")],
+        inverseJoinColumns = [JoinColumn(name = "authority")])
     val authorities: Set<Authority>
 )

@@ -1,8 +1,6 @@
 package br.com.fogliato.authservice.config
 
-import br.com.fogliato.authservice.domain.Authorities
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -11,48 +9,30 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore
+import org.springframework.security.oauth2.provider.ClientDetailsService
+import org.springframework.security.oauth2.provider.approval.TokenStoreUserApprovalHandler
+import org.springframework.security.oauth2.provider.approval.UserApprovalHandler
+import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory
+import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore
 import javax.sql.DataSource
 
 @Configuration
 @EnableAuthorizationServer
 class AuthorizationServerConfiguration(
     @Qualifier("authenticationManagerBean")
-    val authenticationManager: AuthenticationManager,
+    private val authenticationManager: AuthenticationManager,
 
-    val passwordEncoder: PasswordEncoder,
+    private val passwordEncoder: PasswordEncoder,
 
-    val dataSource: DataSource,
+    private val dataSource: DataSource,
 
-    @Value("\${security.oauth2.client.client-id}")
-    val clientId: String,
-
-    @Value("\${security.oauth2.client.authorized-grant-types}")
-    val authorizedGrantTypes: Array<String>,
-
-    @Value("\${security.oauth2.client.resource-ids}")
-    val resourceIds: String,
-
-    @Value("\${security.oauth2.client.scope}")
-    val scopes: Array<String>,
-
-    @Value("\${security.oauth2.client.client-secret}")
-    val secret: String,
-
-    @Value("\${security.oauth2.client.access-token-validity-seconds}")
-    val accessTokenValiditySeconds: Int
+    private val clientDetailsService: ClientDetailsService,
 
 ): AuthorizationServerConfigurerAdapter() {
 
     @Bean
-    fun tokenStore(): JdbcTokenStore {
-        return JdbcTokenStore(dataSource)
-    }
-
-    @Throws(java.lang.Exception::class)
-    override fun configure(security: AuthorizationServerSecurityConfigurer) {
-        security.passwordEncoder(passwordEncoder)
+    fun tokenStore(): InMemoryTokenStore {
+        return InMemoryTokenStore()
     }
 
     @Throws(Exception::class)
@@ -60,17 +40,26 @@ class AuthorizationServerConfiguration(
         endpoints
             .authenticationManager(authenticationManager)
             .tokenStore(tokenStore())
+            .userApprovalHandler(userApprovalHandler())
     }
 
     @Throws(Exception::class)
     override fun configure(clients: ClientDetailsServiceConfigurer) {
-        clients.jdbc(dataSource)
-            .withClient(clientId)
-            .authorizedGrantTypes(*authorizedGrantTypes)
-            .authorities(Authorities.values().toString())
-            .resourceIds(resourceIds)
-            .scopes(*scopes)
-            .secret(secret)
-            .accessTokenValiditySeconds(accessTokenValiditySeconds)
+        clients.inMemory()
+            .withClient("teste")
+            .authorizedGrantTypes("password")
+            .scopes("read", "write")
+            .secret(passwordEncoder.encode("teste"))
+            .accessTokenValiditySeconds(360000)
     }
+
+    @Bean
+    fun userApprovalHandler(): UserApprovalHandler {
+        val handler = TokenStoreUserApprovalHandler()
+        handler.setTokenStore(tokenStore())
+        handler.setRequestFactory(DefaultOAuth2RequestFactory(clientDetailsService))
+        handler.setClientDetailsService(clientDetailsService)
+        return handler
+    }
+
 }

@@ -1,7 +1,7 @@
 DELETE FROM oauth_client_details;
 
 INSERT INTO "user" (username, email, password, activated)
-SELECT * FROM (SELECT 'admin', 'admin@admin.com', '{bcrypt}$2a$10$A5uzG3FsHCebfimh/fFY/erxRAixPNoiWzNQwhiXXAy9EMThOzz2O', true) AS tmp
+SELECT * FROM (SELECT 'admin', 'admin@admin.com', '$2y$12$9AeOzgP712/PEu6SNdy4WO40koAQhNOcxyBNRSXuVoPTOwpcbv86K', true) AS tmp
 WHERE NOT EXISTS (
     SELECT username FROM "user" WHERE username = 'admin'
 ) LIMIT 1;
